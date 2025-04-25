@@ -1,0 +1,58 @@
+---
+- name: Install Apache
+  apt:
+    name: "{{ apache_service }}"
+    state: present
+    update_cache: yes
+  when: ansible_facts['os_family'] == "Debian"  # Ensure you are on a Debian-based system
+
+- name: Ensure Apache is running
+  service:
+    name: "{{ apache_service }}"
+    enabled: true
+    state: started
+
+- name: Copy website files
+  copy:
+    src: "{{ item.name }}/"
+    dest: "{{ item.documentroot }}"
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  loop: "{{ vhosts }}"
+  notify: restart apache
+
+- name: Deploy virtual host configuration
+  template:
+    src: "{{ item.conf_template }}"
+    dest: "/etc/apache2/sites-available/{{ item.name }}.conf"
+  loop: "{{ vhosts }}"
+  notify: restart apache
+
+- name: Enable virtual hosts
+  command: a2ensite {{ item.name }}.conf
+  args:
+    removes: "/etc/apache2/sites-enabled/{{ item.name }}.conf"
+  loop: "{{ vhosts }}"
+  notify: restart apache
+
+- name: Enable mod_rewrite
+  command: a2enmod rewrite
+  notify: restart apache
+
+- name: Create document root directories
+  file:
+    path: "{{ item.documentroot }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  loop: "{{ vhosts }}"
+
+- name: Open UFW for HTTP/HTTPS
+  ufw:
+    rule: allow
+    name: "{{ item }}"
+  loop:
+    - 'Apache Full'  # UFW rule for both HTTP and HTTPS
+  notify: reload firewall
