@@ -1,0 +1,9 @@
+all:
+  hosts:
+    server1:
+      ansible_user: shaliga
+      ansible_host: 192.168.23.136
+      ansible_become: yes
+      ansible_become_method: sudo
+      ansible_become_pass: asd123.
+     
