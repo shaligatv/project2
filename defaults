@@ -1,0 +1,21 @@
+---
+# defaults file for webhosting
+package: apache2
+service: apache2
+path: /var/www/html
+
+vhosts:
+  - name: site1
+    servername: site1.local
+    documentroot: /var/www/html/site1
+    conf_template: site1.conf.j2
+    files:
+      - index.html
+      - about.html
+
+  - name: site2
+    servername: site2.local
+    documentroot: /var/www/html/site2
+    conf_template: site2.conf.j2
+    files:
+      - index.html
