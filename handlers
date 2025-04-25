@@ -1,0 +1,10 @@
+---
+# handlers file for webhosting
+
+- name: restart apache
+  service:
+    name: "{{ service }}"
+    state: restarted
+
+- name: reload firewall
+  command: ufw reload
